@@ -1,0 +1,880 @@
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<style>
+  :root {
+    --bg: #FAF7F1;
+    --surface: #FFFFFF;
+    --ink: #232622;
+    --ink-soft: #6B6F67;
+    --line: #E6E0D2;
+    --text-mode: #1F6F5C;
+    --text-mode-soft: #E4EFEC;
+    --voice-mode: #C97A2B;
+    --voice-mode-soft: #F7EADA;
+    --danger: #B8492F;
+  }
+
+  * { box-sizing: border-box; }
+
+  #root {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: 'Inter', sans-serif;
+    min-height: 100%;
+    padding: 32px 20px 60px;
+    display: flex;
+    justify-content: center;
+  }
+
+  .stage {
+    width: 100%;
+    max-width: 640px;
+  }
+
+  .eyebrow {
+    font-size: 12px;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    font-weight: 600;
+    margin-bottom: 6px;
+  }
+
+  h1.title {
+    font-family: 'Fraunces', serif;
+    font-size: 34px;
+    font-weight: 600;
+    line-height: 1.15;
+    margin: 0 0 6px;
+    letter-spacing: -0.01em;
+  }
+
+  .subtitle {
+    color: var(--ink-soft);
+    font-size: 15px;
+    margin: 0 0 28px;
+    line-height: 1.5;
+  }
+
+  .card {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 28px;
+    margin-bottom: 20px;
+  }
+
+  label {
+    display: block;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: var(--ink);
+  }
+
+  .field { margin-bottom: 20px; }
+  .field:last-child { margin-bottom: 0; }
+
+  input[type="text"], select, textarea {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 15px;
+    padding: 12px 14px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s ease;
+  }
+
+  input[type="text"]:focus, select:focus, textarea:focus {
+    border-color: var(--ink-soft);
+  }
+
+  textarea { resize: vertical; min-height: 110px; line-height: 1.5; }
+
+  .row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  button {
+    font-family: 'Inter', sans-serif;
+    font-weight: 600;
+    font-size: 15px;
+    border-radius: 10px;
+    border: none;
+    padding: 13px 22px;
+    cursor: pointer;
+    transition: transform 0.1s ease, opacity 0.15s ease;
+  }
+  button:active { transform: scale(0.98); }
+  button:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .btn-primary {
+    background: var(--ink);
+    color: var(--bg);
+    width: 100%;
+  }
+  .btn-primary:hover:not(:disabled) { opacity: 0.88; }
+
+  .btn-ghost {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+  .btn-ghost:hover:not(:disabled) { border-color: var(--ink-soft); }
+
+  /* Mode toggle */
+  .mode-toggle {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .mode-option {
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    padding: 14px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s ease;
+  }
+  .mode-option .mode-icon { font-size: 20px; margin-bottom: 6px; }
+  .mode-option .mode-label { font-weight: 600; font-size: 14px; }
+  .mode-option .mode-sub { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+  .mode-option[data-active="true"][data-kind="text"] {
+    border-color: var(--text-mode); background: var(--text-mode-soft);
+  }
+  .mode-option[data-active="true"][data-kind="voice"] {
+    border-color: var(--voice-mode); background: var(--voice-mode-soft);
+  }
+
+  /* Progress */
+  .progress-row {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 22px;
+  }
+  .progress-track {
+    flex: 1; height: 6px; background: var(--line); border-radius: 4px; overflow: hidden;
+  }
+  .progress-fill {
+    height: 100%; background: var(--ink); border-radius: 4px; transition: width 0.3s ease;
+  }
+  .progress-text { font-size: 13px; color: var(--ink-soft); white-space: nowrap; }
+
+  .question-eyebrow {
+    font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+  }
+  .question-eyebrow[data-kind="text"] { color: var(--text-mode); }
+  .question-eyebrow[data-kind="voice"] { color: var(--voice-mode); }
+
+  .question-text {
+    font-family: 'Fraunces', serif;
+    font-size: 24px;
+    font-weight: 500;
+    line-height: 1.35;
+    margin: 10px 0 22px;
+  }
+
+  /* Waveform for voice mode */
+  .waveform {
+    display: flex; align-items: center; justify-content: center; gap: 4px;
+    height: 48px; margin-bottom: 18px;
+  }
+  .waveform span {
+    display: block; width: 5px; border-radius: 3px; background: var(--voice-mode);
+    height: 10px; transition: height 0.15s ease;
+  }
+  .waveform.listening span { animation: bounce 0.9s ease-in-out infinite; }
+  .waveform span:nth-child(1) { animation-delay: 0s; }
+  .waveform span:nth-child(2) { animation-delay: 0.1s; }
+  .waveform span:nth-child(3) { animation-delay: 0.2s; }
+  .waveform span:nth-child(4) { animation-delay: 0.3s; }
+  .waveform span:nth-child(5) { animation-delay: 0.4s; }
+  .waveform span:nth-child(6) { animation-delay: 0.3s; }
+  .waveform span:nth-child(7) { animation-delay: 0.2s; }
+  .waveform span:nth-child(8) { animation-delay: 0.1s; }
+  @keyframes bounce {
+    0%, 100% { height: 10px; }
+    50% { height: 38px; }
+  }
+
+  .transcript-box {
+    background: var(--bg);
+    border: 1px dashed var(--line);
+    border-radius: 10px;
+    padding: 14px;
+    font-size: 14px;
+    line-height: 1.5;
+    color: var(--ink-soft);
+    min-height: 60px;
+    margin-bottom: 16px;
+  }
+  .transcript-box.has-text { color: var(--ink); border-style: solid; }
+
+  .voice-controls { display: flex; gap: 10px; margin-bottom: 6px; }
+  .voice-controls button { flex: 1; }
+
+  .btn-mic {
+    background: var(--voice-mode-soft);
+    color: var(--voice-mode);
+    border: 1.5px solid var(--voice-mode);
+  }
+  .btn-mic[data-listening="true"] {
+    background: var(--voice-mode);
+    color: white;
+  }
+
+  .btn-replay {
+    background: transparent;
+    border: 1px solid var(--line);
+    color: var(--ink-soft);
+    font-size: 13px;
+    padding: 8px 14px;
+  }
+
+  .loading-row {
+    display: flex; align-items: center; gap: 10px;
+    color: var(--ink-soft); font-size: 14px; padding: 10px 0;
+  }
+  .spinner {
+    width: 16px; height: 16px; border-radius: 50%;
+    border: 2px solid var(--line); border-top-color: var(--ink);
+    animation: spin 0.7s linear infinite;
+  }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* Feedback */
+  .score-badge {
+    display: inline-flex; align-items: center; gap: 8px;
+    font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600;
+    margin-bottom: 4px;
+  }
+  .score-badge .score-max { font-size: 15px; font-family: 'Inter', sans-serif; color: var(--ink-soft); font-weight: 500; }
+
+  .feedback-section { margin-top: 18px; }
+  .feedback-section h4 {
+    font-size: 12px; text-transform: uppercase; letter-spacing: 0.08em;
+    color: var(--ink-soft); margin: 0 0 8px;
+  }
+  .feedback-list { margin: 0; padding-left: 18px; font-size: 14.5px; line-height: 1.6; }
+  .feedback-list li { margin-bottom: 4px; }
+  .feedback-note { font-size: 14.5px; line-height: 1.6; color: var(--ink); }
+
+  .error-box {
+    background: #FBEAE4; border: 1px solid var(--danger); color: var(--danger);
+    border-radius: 10px; padding: 12px 14px; font-size: 13.5px; margin-bottom: 16px;
+  }
+
+  .info-box {
+    background: var(--bg); border: 1px solid var(--line); color: var(--ink-soft);
+    border-radius: 10px; padding: 10px 12px; font-size: 13px; margin-top: 14px;
+  }
+
+  .divider { height: 1px; background: var(--line); margin: 22px 0; }
+
+  .summary-stat-row { display: flex; gap: 16px; margin-bottom: 6px; }
+  .summary-stat { flex: 1; text-align: center; background: var(--bg); border-radius: 12px; padding: 16px 10px; }
+  .summary-stat .num { font-family: 'Fraunces', serif; font-size: 28px; font-weight: 600; }
+  .summary-stat .lbl { font-size: 12px; color: var(--ink-soft); margin-top: 2px; }
+
+  .qa-review { margin-top: 24px; }
+  .qa-item { 
+    background: var(--bg); 
+    border-radius: 12px; 
+    padding: 18px; 
+    margin-bottom: 16px;
+    border-left: 4px solid var(--line);
+  }
+  .qa-item[data-score="high"] { border-left-color: var(--text-mode); }
+  .qa-item[data-score="medium"] { border-left-color: var(--voice-mode); }
+  .qa-item[data-score="low"] { border-left-color: var(--danger); }
+  .qa-header { display: flex; justify-content: space-between; align-items: start; margin-bottom: 12px; }
+  .qa-number { font-size: 12px; font-weight: 600; color: var(--ink-soft); text-transform: uppercase; letter-spacing: 0.08em; }
+  .qa-score-badge { 
+    font-family: 'Fraunces', serif; 
+    font-size: 20px; 
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .qa-question { font-weight: 600; font-size: 15px; margin-bottom: 10px; line-height: 1.4; }
+  .qa-answer { 
+    font-size: 14px; 
+    line-height: 1.6; 
+    color: var(--ink-soft); 
+    margin-bottom: 12px;
+    padding: 12px;
+    background: var(--surface);
+    border-radius: 8px;
+  }
+  .qa-feedback { font-size: 13px; line-height: 1.5; }
+  .qa-feedback-label { 
+    font-size: 11px; 
+    text-transform: uppercase; 
+    letter-spacing: 0.08em; 
+    font-weight: 600; 
+    color: var(--ink-soft); 
+    margin: 8px 0 4px;
+  }
+  .qa-feedback-text { color: var(--ink); }
+
+  .hidden { display: none !important; }
+
+  @media (max-width: 480px) {
+    .row2 { grid-template-columns: 1fr; }
+    h1.title { font-size: 28px; }
+  }
+</style>
+
+<div id="root">
+  <div class="stage">
+
+    <!-- SCREEN: SETUP -->
+    <div id="screen-setup">
+      <div class="eyebrow">Interview Coach</div>
+      <h1 class="title">Rehearse before it counts.</h1>
+      <p class="subtitle">Set up your session, then practise by typing your answers or speaking them out loud. You'll get a question, respond, and get direct feedback after each one.</p>
+
+      <div class="card">
+        <div class="field">
+          <label for="in-company">Company name</label>
+          <input type="text" id="in-company" placeholder="e.g. Stripe" />
+        </div>
+
+        <div class="field">
+          <label for="in-jobdesc">Job description (optional)</label>
+          <textarea id="in-jobdesc" placeholder="Paste the job posting here — optional but helps tailor questions"></textarea>
+        </div>
+
+        <div class="field">
+          <label for="in-role">Role you're interviewing for</label>
+          <input type="text" id="in-role" placeholder="e.g. Senior Product Manager" />
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="in-level">Experience level</label>
+            <select id="in-level">
+              <option value="entry-level">Entry-level</option>
+              <option value="mid-level" selected>Mid-level</option>
+              <option value="senior">Senior</option>
+              <option value="executive">Executive</option>
+            </select>
+          </div>
+          <div class="field">
+            <label for="in-type">Interview type</label>
+            <select id="in-type">
+              <option value="behavioral" selected>Behavioral</option>
+              <option value="technical">Technical</option>
+              <option value="case study">Case study</option>
+              <option value="mixed">Mixed</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="in-count">Number of questions</label>
+          <select id="in-count">
+            <option value="3">3 — quick warm-up</option>
+            <option value="5" selected>5 — standard session</option>
+            <option value="8">8 — full mock interview</option>
+          </select>
+        </div>
+
+        <div class="field">
+          <label>How do you want to answer?</label>
+          <div class="mode-toggle">
+            <div class="mode-option" data-kind="text" data-active="true" onclick="setMode('text')">
+              <div class="mode-icon">⌨️</div>
+              <div class="mode-label">Type it out</div>
+              <div class="mode-sub">Read &amp; write answers</div>
+            </div>
+            <div class="mode-option" data-kind="voice" data-active="false" onclick="setMode('voice')">
+              <div class="mode-icon">🎙️</div>
+              <div class="mode-label">Speak it out</div>
+              <div class="mode-sub">Hear &amp; answer aloud</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div id="setup-error"></div>
+      <button class="btn-primary" onclick="startSession()">Start practising</button>
+    </div>
+
+    <!-- SCREEN: PRACTICE -->
+    <div id="screen-practice" class="hidden">
+      <div class="progress-row">
+        <div class="progress-track"><div class="progress-fill" id="progress-fill" style="width:0%"></div></div>
+        <div class="progress-text" id="progress-text">Question 1</div>
+      </div>
+
+      <div class="card">
+        <div id="question-block">
+          <div class="question-eyebrow" id="q-mode-label" data-kind="text">Question</div>
+          <div class="question-text" id="question-text">Loading your first question…</div>
+          <div id="research-note" class="info-box hidden"></div>
+        </div>
+
+        <!-- shown only in voice mode -->
+        <div id="waveform" class="waveform hidden">
+          <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <button class="btn-replay hidden" id="btn-replay" onclick="replayQuestion()">🔊 Replay question</button>
+
+        <div id="answer-block" style="margin-top: 18px;">
+          <!-- TEXT MODE input -->
+          <div id="text-input-wrap">
+            <div class="field">
+              <label for="answer-textarea">Your answer</label>
+              <textarea id="answer-textarea" placeholder="Type your answer here…"></textarea>
+            </div>
+          </div>
+
+          <!-- VOICE MODE input -->
+          <div id="voice-input-wrap" class="hidden">
+            <div class="field">
+              <label>Your answer (transcribed)</label>
+              <div class="transcript-box" id="transcript-box">Tap "Start speaking" and answer out loud.</div>
+            </div>
+            <div class="voice-controls">
+              <button class="btn-mic" id="btn-mic" data-listening="false" onclick="toggleListening()">🎙️ Start speaking</button>
+            </div>
+            <div id="voice-unsupported" class="error-box hidden">
+              Your browser doesn't support voice input. Switch to typed answers below to continue.
+            </div>
+          </div>
+
+          <div id="answer-error"></div>
+          <button class="btn-primary" id="btn-submit-answer" onclick="submitAnswer()" style="margin-top:14px;">Submit answer</button>
+        </div>
+
+        <!-- LOADING -->
+        <div id="loading-row" class="loading-row hidden">
+          <div class="spinner"></div>
+          <span id="loading-text">Thinking…</span>
+        </div>
+
+        <!-- FEEDBACK -->
+        <div id="feedback-block" class="hidden">
+          <div class="divider"></div>
+          <div class="score-badge"><span id="fb-score">–</span><span class="score-max">/ 10</span></div>
+          <div class="feedback-note" id="fb-summary"></div>
+
+          <div class="feedback-section">
+            <h4>What worked</h4>
+            <ul class="feedback-list" id="fb-strengths"></ul>
+          </div>
+          <div class="feedback-section">
+            <h4>What to sharpen</h4>
+            <ul class="feedback-list" id="fb-improvements"></ul>
+          </div>
+
+          <button class="btn-primary" id="btn-next" onclick="nextQuestion()" style="margin-top:20px;">Next question</button>
+        </div>
+      </div>
+
+      <button class="btn-ghost" onclick="quitSession()" style="width:100%;">End session early</button>
+    </div>
+
+    <!-- SCREEN: SUMMARY -->
+    <div id="screen-summary" class="hidden">
+      <div class="eyebrow">Session complete</div>
+      <h1 class="title" id="summary-title">Nice work.</h1>
+      <p class="subtitle" id="summary-sub"></p>
+
+      <div class="card">
+        <div class="summary-stat-row">
+          <div class="summary-stat">
+            <div class="num" id="sum-avg">–</div>
+            <div class="lbl">Avg. score</div>
+          </div>
+          <div class="summary-stat">
+            <div class="num" id="sum-count">–</div>
+            <div class="lbl">Questions</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="feedback-section" style="margin-top:0;">
+          <h4>Consistent strengths</h4>
+          <ul class="feedback-list" id="sum-strengths"></ul>
+        </div>
+        <div class="feedback-section">
+          <h4>Focus areas for next time</h4>
+          <ul class="feedback-list" id="sum-focus"></ul>
+        </div>
+      </div>
+
+      <div class="card">
+        <h3 style="font-size: 16px; font-weight: 600; margin: 0 0 16px;">Your answers in detail</h3>
+        <div id="qa-review-list"></div>
+      </div>
+
+      <button class="btn-primary" onclick="restart()">Start a new session</button>
+    </div>
+
+  </div>
+</div>
+
+<script>
+  // ---------- State ----------
+  const state = {
+    company: '', jobDescription: '', role: '', level: '', type: '', count: 5, mode: 'text',
+    index: 0,
+    history: [], // { question, answer, score, strengths, improvements }
+    researchNotes: ''
+  };
+
+  let recognition = null;
+  let listening = false;
+  let finalTranscript = '';
+
+  // ---------- API helpers ----------
+  async function callAPI(endpoint, payload) {
+    const response = await fetch(endpoint, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload)
+    });
+    if (!response.ok) throw new Error("API request failed: " + response.status);
+    return await response.json();
+  }
+
+  // ---------- Setup screen ----------
+  function setMode(mode) {
+    state.mode = mode;
+    document.querySelectorAll('.mode-option').forEach(el => {
+      el.setAttribute('data-active', el.dataset.kind === mode ? 'true' : 'false');
+    });
+  }
+
+  function showError(containerId, message) {
+    document.getElementById(containerId).innerHTML =
+      `<div class="error-box">${message}</div>`;
+  }
+  function clearError(containerId) {
+    document.getElementById(containerId).innerHTML = '';
+  }
+
+  async function researchCompany() {
+    const noteEl = document.getElementById('research-note');
+    
+    try {
+      setLoading(true, `Researching ${state.company}…`);
+      
+      const researchResult = await callAPI('/api/research', {
+        company: state.company,
+        jobDescription: state.jobDescription
+      });
+      
+      state.researchNotes = researchResult.summary || '';
+      noteEl.classList.add('hidden');
+    } catch (err) {
+      console.warn('Research endpoint failed, continuing without notes:', err);
+      state.researchNotes = '';
+      noteEl.textContent = 'Unable to research company — using generic questions instead.';
+      noteEl.classList.remove('hidden');
+    }
+  }
+
+  async function startSession() {
+    const company = document.getElementById('in-company').value.trim();
+    const role = document.getElementById('in-role').value.trim();
+    
+    if (!company) {
+      showError('setup-error', 'Please add the company name.');
+      return;
+    }
+    if (!role) {
+      showError('setup-error', 'Add the role you\'re interviewing for so questions can be tailored to it.');
+      return;
+    }
+    clearError('setup-error');
+
+    state.company = company;
+    state.jobDescription = document.getElementById('in-jobdesc').value.trim();
+    state.role = role;
+    state.level = document.getElementById('in-level').value;
+    state.type = document.getElementById('in-type').value;
+    state.count = parseInt(document.getElementById('in-count').value, 10);
+    state.index = 0;
+    state.history = [];
+    state.researchNotes = '';
+
+    document.getElementById('screen-setup').classList.add('hidden');
+    document.getElementById('screen-practice').classList.remove('hidden');
+
+    applyModeToPracticeScreen();
+    setupSpeechRecognition();
+    
+    await researchCompany();
+    await loadQuestion();
+  }
+
+  function applyModeToPracticeScreen() {
+    const isVoice = state.mode === 'voice';
+    document.getElementById('q-mode-label').dataset.kind = state.mode;
+    document.getElementById('q-mode-label').textContent = isVoice ? 'Listen & respond' : 'Question';
+    document.getElementById('waveform').classList.toggle('hidden', !isVoice);
+    document.getElementById('btn-replay').classList.toggle('hidden', !isVoice);
+    document.getElementById('text-input-wrap').classList.toggle('hidden', isVoice);
+    document.getElementById('voice-input-wrap').classList.toggle('hidden', !isVoice);
+  }
+
+  // ---------- Speech setup ----------
+  function setupSpeechRecognition() {
+    const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+    if (!SR) {
+      document.getElementById('voice-unsupported').classList.remove('hidden');
+      document.getElementById('btn-mic').disabled = true;
+      return;
+    }
+    recognition = new SR();
+    recognition.continuous = true;
+    recognition.interimResults = true;
+    recognition.lang = 'en-US';
+
+    recognition.onresult = (event) => {
+      let interim = '';
+      for (let i = event.resultIndex; i < event.results.length; i++) {
+        const transcript = event.results[i][0].transcript;
+        if (event.results[i].isFinal) finalTranscript += transcript + ' ';
+        else interim += transcript;
+      }
+      const box = document.getElementById('transcript-box');
+      box.textContent = (finalTranscript + interim).trim() || 'Listening…';
+      box.classList.toggle('has-text', (finalTranscript + interim).trim().length > 0);
+    };
+
+    recognition.onerror = () => stopListening();
+    recognition.onend = () => {
+      if (listening) recognition.start(); // keep listening until user stops
+    };
+  }
+
+  function toggleListening() {
+    if (!recognition) return;
+    if (listening) stopListening();
+    else startListening();
+  }
+
+  function startListening() {
+    finalTranscript = document.getElementById('transcript-box').classList.contains('has-text')
+      ? document.getElementById('transcript-box').textContent + ' ' : '';
+    listening = true;
+    recognition.start();
+    document.getElementById('btn-mic').dataset.listening = 'true';
+    document.getElementById('btn-mic').textContent = '⏸ Stop speaking';
+    document.getElementById('waveform').classList.add('listening');
+  }
+
+  function stopListening() {
+    listening = false;
+    try { recognition.stop(); } catch (e) {}
+    document.getElementById('btn-mic').dataset.listening = 'false';
+    document.getElementById('btn-mic').textContent = '🎙️ Start speaking';
+    document.getElementById('waveform').classList.remove('listening');
+  }
+
+  function speak(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.rate = 1;
+    window.speechSynthesis.speak(utter);
+  }
+
+  function replayQuestion() {
+    speak(document.getElementById('question-text').textContent);
+  }
+
+  // ---------- Question flow ----------
+  function setLoading(isLoading, label) {
+    document.getElementById('loading-row').classList.toggle('hidden', !isLoading);
+    document.getElementById('loading-text').textContent = label || 'Thinking…';
+    document.getElementById('answer-block').classList.toggle('hidden', isLoading);
+  }
+
+  async function loadQuestion() {
+    setLoading(true, 'Preparing your question…');
+    document.getElementById('feedback-block').classList.add('hidden');
+    document.getElementById('question-text').textContent = '';
+    document.getElementById('answer-textarea').value = '';
+    document.getElementById('transcript-box').textContent = 'Tap "Start speaking" and answer out loud.';
+    document.getElementById('transcript-box').classList.remove('has-text');
+    finalTranscript = '';
+
+    const n = state.index + 1;
+    document.getElementById('progress-text').textContent = `Question ${n} of ${state.count}`;
+    document.getElementById('progress-fill').style.width = `${((n - 1) / state.count) * 100}%`;
+
+    try {
+      const result = await callAPI('/api/question', {
+        company: state.company,
+        role: state.role,
+        level: state.level,
+        type: state.type,
+        questionNumber: n,
+        totalQuestions: state.count,
+        history: state.history,
+        researchNotes: state.researchNotes,
+        jobDescription: state.jobDescription
+      });
+      document.getElementById('question-text').textContent = result.question;
+      if (state.mode === 'voice') speak(result.question);
+    } catch (err) {
+      document.getElementById('question-text').textContent =
+        "Couldn't generate a question right now.";
+      showError('answer-error', 'Something went wrong. Try submitting again in a moment.');
+    }
+    setLoading(false);
+  }
+
+  async function submitAnswer() {
+    clearError('answer-error');
+    let answer = '';
+    if (state.mode === 'text') {
+      answer = document.getElementById('answer-textarea').value.trim();
+    } else {
+      if (listening) stopListening();
+      answer = finalTranscript.trim();
+    }
+
+    if (!answer) {
+      showError('answer-error', state.mode === 'text'
+        ? 'Write an answer before submitting.'
+        : 'Record an answer before submitting — tap "Start speaking" first.');
+      return;
+    }
+
+    setLoading(true, 'Reviewing your answer…');
+    document.getElementById('btn-submit-answer').disabled = true;
+
+    const question = document.getElementById('question-text').textContent;
+
+    try {
+      const result = await callAPI('/api/evaluate', {
+        company: state.company,
+        role: state.role,
+        level: state.level,
+        type: state.type,
+        question: question,
+        answer: answer,
+        researchNotes: state.researchNotes,
+        jobDescription: state.jobDescription
+      });
+      state.history.push({
+        question, answer,
+        score: result.score,
+        strengths: result.strengths,
+        improvements: result.improvements
+      });
+      renderFeedback(result);
+    } catch (err) {
+      showError('answer-error', 'Something went wrong getting feedback. Try submitting again.');
+    }
+    setLoading(false);
+    document.getElementById('btn-submit-answer').disabled = false;
+  }
+
+  function renderFeedback(result) {
+    document.getElementById('fb-score').textContent = result.score;
+    document.getElementById('fb-summary').textContent = result.summary;
+    document.getElementById('fb-strengths').innerHTML =
+      result.strengths.map(s => `<li>${s}</li>`).join('');
+    document.getElementById('fb-improvements').innerHTML =
+      result.improvements.map(s => `<li>${s}</li>`).join('');
+    document.getElementById('feedback-block').classList.remove('hidden');
+    document.getElementById('answer-block').classList.add('hidden');
+
+    const n = state.index + 1;
+    document.getElementById('progress-fill').style.width = `${(n / state.count) * 100}%`;
+
+    if (state.index + 1 >= state.count) {
+      document.getElementById('btn-next').textContent = 'See my results';
+    } else {
+      document.getElementById('btn-next').textContent = 'Next question';
+    }
+  }
+
+  async function nextQuestion() {
+    state.index++;
+    document.getElementById('answer-block').classList.remove('hidden');
+    if (state.index >= state.count) {
+      await showSummary();
+    } else {
+      await loadQuestion();
+    }
+  }
+
+  function quitSession() {
+    if (state.history.length === 0) { restart(); return; }
+    state.count = state.history.length;
+    showSummary();
+  }
+
+  // ---------- Summary ----------
+  async function showSummary() {
+    document.getElementById('screen-practice').classList.add('hidden');
+    document.getElementById('screen-summary').classList.remove('hidden');
+
+    const avg = state.history.reduce((a, h) => a + h.score, 0) / state.history.length;
+    document.getElementById('sum-avg').textContent = avg.toFixed(1);
+    document.getElementById('sum-count').textContent = state.history.length;
+
+    try {
+      const result = await callAPI('/api/summary', {
+        company: state.company,
+        role: state.role,
+        level: state.level,
+        type: state.type,
+        history: state.history,
+        researchNotes: state.researchNotes,
+        jobDescription: state.jobDescription
+      });
+      document.getElementById('summary-title').textContent = result.headline;
+      document.getElementById('summary-sub').textContent = result.summary;
+      document.getElementById('sum-strengths').innerHTML =
+        result.consistent_strengths.map(s => `<li>${s}</li>`).join('');
+      document.getElementById('sum-focus').innerHTML =
+        result.focus_areas.map(s => `<li>${s}</li>`).join('');
+    } catch (err) {
+      document.getElementById('summary-title').textContent = 'Session complete.';
+      document.getElementById('summary-sub').textContent =
+        `You averaged ${avg.toFixed(1)}/10 across ${state.history.length} questions.`;
+      document.getElementById('sum-strengths').innerHTML = '<li>Summary unavailable this time.</li>';
+      document.getElementById('sum-focus').innerHTML = '<li>Summary unavailable this time.</li>';
+    }
+
+    // Render detailed Q&A review
+    const qaReviewHTML = state.history.map((h, i) => {
+      const scoreLevel = h.score >= 7 ? 'high' : h.score >= 5 ? 'medium' : 'low';
+      return `
+        <div class="qa-item" data-score="${scoreLevel}">
+          <div class="qa-header">
+            <div class="qa-number">Question ${i + 1} of ${state.history.length}</div>
+            <div class="qa-score-badge">${h.score}/10</div>
+          </div>
+          <div class="qa-question">${h.question}</div>
+          <div class="qa-answer">${h.answer}</div>
+          <div class="qa-feedback">
+            <div class="qa-feedback-label">What worked</div>
+            <div class="qa-feedback-text">${h.strengths.map(s => `• ${s}`).join('<br>')}</div>
+            <div class="qa-feedback-label">What to improve</div>
+            <div class="qa-feedback-text">${h.improvements.map(s => `• ${s}`).join('<br>')}</div>
+          </div>
+        </div>
+      `;
+    }).join('');
+    document.getElementById('qa-review-list').innerHTML = qaReviewHTML;
+  }
+
+  function restart() {
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    document.getElementById('screen-summary').classList.add('hidden');
+    document.getElementById('screen-setup').classList.remove('hidden');
+    document.getElementById('in-company').value = '';
+    document.getElementById('in-jobdesc').value = '';
+    document.getElementById('in-role').value = '';
+    setMode('text');
+  }
+</script>

@@ -1,0 +1,10 @@
+name = "grace-interviewcoach"
+compatibility_date = "2024-01-01"
+compatibility_flags = ["nodejs_compat"]
+pages_build_output_dir = "public"
+
+[env.production]
+vars = { }
+
+# Environment variables (set in Cloudflare dashboard):
+# ANTHROPIC_API_KEY = "your-api-key-here"

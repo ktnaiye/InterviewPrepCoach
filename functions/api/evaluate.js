@@ -1,0 +1,46 @@
+// POST /api/evaluate - Evaluate candidate answer
+import { askClaude, jsonResponse, handleOptionsRequest } from '../_shared.js';
+
+export async function onRequestPost(context) {
+  try {
+    const { question, answer, role, level, type, company, researchNotes, jobDescription } = await context.request.json();
+
+    const systemPrompt = `You are an experienced, encouraging UK interview coach giving direct, specific, actionable feedback. Be honest about weaknesses but constructive in tone.
+
+Evaluate the answer's structure using the STAR method (Situation, Task, Action, Result) where the question calls for it.
+
+If researchNotes mentions things this company's interviewers specifically probe for (e.g. "they look for evidence of teamwork", "they value data-driven decisions"), or Success Profiles elements for public sector roles (e.g. "Seeing the Big Picture", "Making Effective Decisions"), weigh the answer against those specific criteria rather than generic best practice.
+
+Give 2-3 items each for strengths and improvements.
+
+Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape:
+{"score": <integer 1-10>, "summary": "one or two sentence overall take", "strengths": ["short point", "short point"], "improvements": ["short point", "short point"]}`;
+
+    const userPrompt = `Company: ${company}
+Target role: ${role}
+Experience level: ${level}
+Interview type: ${type}
+${researchNotes ? `\nResearch notes about this company's interview process:\n${researchNotes}\n` : ''}
+${jobDescription ? `\nJob description:\n${jobDescription}\n` : ''}
+Interview question: "${question}"
+
+Candidate's answer: "${answer}"
+
+Evaluate this answer.`;
+
+    const result = await askClaude(context.env.ANTHROPIC_API_KEY, systemPrompt, userPrompt, false);
+    return jsonResponse(result);
+  } catch (error) {
+    console.error('Evaluate endpoint error:', error);
+    return jsonResponse({
+      score: 5,
+      summary: 'Unable to evaluate at this time.',
+      strengths: ['Answer provided'],
+      improvements: ['Try again']
+    }, 500);
+  }
+}
+
+export async function onRequestOptions() {
+  return handleOptionsRequest();
+}

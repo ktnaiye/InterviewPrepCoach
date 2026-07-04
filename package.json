@@ -1,0 +1,24 @@
+{
+  "name": "grace_interviewcoach",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "start": "set NODE_OPTIONS=--use-system-ca && node server.js",
+    "dev": "npx wrangler pages dev public --compatibility-date=2024-01-01",
+    "deploy": "npx wrangler pages deploy public",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "type": "module",
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.110.0",
+    "dotenv": "^17.4.2",
+    "express": "^5.2.1"
+  },
+  "devDependencies": {
+    "wrangler": "^4.107.0"
+  }
+}
