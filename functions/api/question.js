@@ -3,7 +3,7 @@ import { askClaude, jsonResponse, handleOptionsRequest } from '../_shared.js';
 
 export async function onRequestPost(context) {
   try {
-    const { role, level, type, company, jobDescription, researchNotes, history, questionNumber, totalQuestions } = await context.request.json();
+    const { role, level, type, company, jobDescription, researchNotes, supportingDocuments, history, questionNumber, totalQuestions } = await context.request.json();
 
     const systemPrompt = `You are an experienced, encouraging UK interview coach. You generate one realistic interview question at a time, tailored to the candidate's target role, seniority, and interview type.
 
@@ -13,6 +13,8 @@ Default to UK interview conventions:
 - Success Profiles framework language for civil service or public sector roles
 
 If job description is provided, ground the question in those specific responsibilities and requirements.
+
+If supporting documents (CV, cover letter) are provided, use them to understand the candidate's background and tailor questions accordingly.
 
 If researchNotes contains real signal about this company's interview style (e.g. "they use case studies", "they focus on culture fit"), adjust accordingly. However, if researchNotes is generic or empty, ignore it and use standard UK interview practices.
 
@@ -31,6 +33,7 @@ Experience level: ${level}
 Interview type: ${type}
 This is question ${questionNumber} of ${totalQuestions}.
 ${jobDescription ? `\nJob description:\n${jobDescription}\n` : ''}
+${supportingDocuments ? `\nSupporting documents (CV/Cover letter):\n${supportingDocuments}\n` : ''}
 ${researchNotes ? `\nResearch notes about this company's interview process:\n${researchNotes}\n` : ''}
 ${historyText ? `\nPrevious questions and answers this session:\n${historyText}\n` : 'This is the first question of the session.\n'}
 Write the next interview question now.`;

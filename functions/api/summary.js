@@ -3,11 +3,13 @@ import { askClaude, jsonResponse, handleOptionsRequest } from '../_shared.js';
 
 export async function onRequestPost(context) {
   try {
-    const { history, company, role, level, type, researchNotes, jobDescription } = await context.request.json();
+    const { history, company, role, level, type, researchNotes, jobDescription, supportingDocuments } = await context.request.json();
 
     const systemPrompt = `You are an experienced UK interview coach summarising a full practice session. 
 
 Call out whether the candidate's answers matched what researchNotes suggests this company or sector looks for (e.g. if researchNotes says "they focus on teamwork", did the candidate demonstrate that? If it mentions Success Profiles for public sector, did they address those competencies?).
+
+If supporting documents (CV, cover letter) were provided, note whether the candidate effectively leveraged their documented experience in their answers.
 
 Be encouraging but honest about patterns across the session.
 
@@ -24,6 +26,7 @@ Experience level: ${level}
 Interview type: ${type}
 ${researchNotes ? `\nResearch notes about this company's interview process:\n${researchNotes}\n` : ''}
 ${jobDescription ? `\nJob description:\n${jobDescription}\n` : ''}
+${supportingDocuments ? `\nCandidate's background (from CV/Cover letter):\n${supportingDocuments}\n` : ''}
 Full session:
 ${historyText}
 

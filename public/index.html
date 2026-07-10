@@ -1,6 +1,8 @@
 
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,500;9..144,600&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 
 <style>
   :root {
@@ -88,6 +90,43 @@
     color: var(--ink);
     outline: none;
     transition: border-color 0.15s ease;
+  }
+
+  input[type="file"] {
+    width: 100%;
+    font-family: 'Inter', sans-serif;
+    font-size: 14px;
+    padding: 10px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    background: var(--bg);
+    color: var(--ink);
+    outline: none;
+    transition: border-color 0.15s ease;
+    cursor: pointer;
+  }
+
+  input[type="file"]::file-selector-button {
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 6px;
+    margin-right: 12px;
+    cursor: pointer;
+    font-family: 'Inter', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+  }
+
+  input[type="file"]::file-selector-button:hover {
+    opacity: 0.9;
+  }
+
+  .file-hint {
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 6px;
   }
 
   input[type="text"]:focus, select:focus, textarea:focus {
@@ -342,7 +381,14 @@
 
         <div class="field">
           <label for="in-jobdesc">Job description (optional)</label>
-          <textarea id="in-jobdesc" placeholder="Paste the job posting here — optional but helps tailor questions"></textarea>
+          <input type="file" id="in-jobdesc" accept=".pdf,.doc,.docx" />
+          <div class="file-hint">Upload a PDF or Word document with the job posting</div>
+        </div>
+
+        <div class="field">
+          <label for="in-supporting">Supporting documents (optional)</label>
+          <input type="file" id="in-supporting" accept=".pdf,.doc,.docx" multiple />
+          <div class="file-hint">Upload CV, cover letter, or other relevant documents</div>
         </div>
 
         <div class="field">
@@ -516,9 +562,60 @@
 </div>
 
 <script>
+  // Configure PDF.js
+  if (typeof pdfjsLib !== 'undefined') {
+    pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js';
+  }
+
+  // ---------- File Processing ----------
+  async function extractTextFromPDF(file) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
+      let fullText = '';
+      
+      for (let i = 1; i <= pdf.numPages; i++) {
+        const page = await pdf.getPage(i);
+        const textContent = await page.getTextContent();
+        const pageText = textContent.items.map(item => item.str).join(' ');
+        fullText += pageText + '\n';
+      }
+      
+      return fullText.trim();
+    } catch (error) {
+      console.error('PDF extraction error:', error);
+      throw new Error('Could not read PDF file');
+    }
+  }
+
+  async function extractTextFromWord(file) {
+    try {
+      const arrayBuffer = await file.arrayBuffer();
+      const result = await mammoth.extractRawText({ arrayBuffer });
+      return result.value.trim();
+    } catch (error) {
+      console.error('Word extraction error:', error);
+      throw new Error('Could not read Word document');
+    }
+  }
+
+  async function processFile(file) {
+    if (!file) return '';
+    
+    const extension = file.name.split('.').pop().toLowerCase();
+    
+    if (extension === 'pdf') {
+      return await extractTextFromPDF(file);
+    } else if (extension === 'doc' || extension === 'docx') {
+      return await extractTextFromWord(file);
+    } else {
+      throw new Error('Unsupported file type');
+    }
+  }
+
   // ---------- State ----------
   const state = {
-    company: '', jobDescription: '', role: '', level: '', type: '', count: 5, mode: 'text',
+    company: '', jobDescription: '', supportingDocuments: '', role: '', level: '', type: '', count: 5, mode: 'text',
     index: 0,
     history: [], // { question, answer, score, strengths, improvements }
     researchNotes: ''
@@ -590,8 +687,42 @@
     }
     clearError('setup-error');
 
+    // Process uploaded files
+    try {
+      const jobDescFile = document.getElementById('in-jobdesc').files[0];
+      const supportingFiles = document.getElementById('in-supporting').files;
+      
+      // Show processing message
+      if (jobDescFile || supportingFiles.length > 0) {
+        showError('setup-error', '<div style="color: var(--text-mode); background: var(--text-mode-soft); border-color: var(--text-mode);">Processing uploaded documents...</div>');
+      }
+      
+      // Extract text from job description file
+      if (jobDescFile) {
+        state.jobDescription = await processFile(jobDescFile);
+      } else {
+        state.jobDescription = '';
+      }
+      
+      // Extract text from supporting documents
+      let supportingText = '';
+      if (supportingFiles.length > 0) {
+        const texts = [];
+        for (let i = 0; i < supportingFiles.length; i++) {
+          const text = await processFile(supportingFiles[i]);
+          texts.push(`${supportingFiles[i].name}:\n${text}`);
+        }
+        supportingText = texts.join('\n\n---\n\n');
+      }
+      state.supportingDocuments = supportingText;
+      
+      clearError('setup-error');
+    } catch (error) {
+      showError('setup-error', `Error processing files: ${error.message}. Please try again or skip file upload.`);
+      return;
+    }
+
     state.company = company;
-    state.jobDescription = document.getElementById('in-jobdesc').value.trim();
     state.role = role;
     state.level = document.getElementById('in-level').value;
     state.type = document.getElementById('in-type').value;
@@ -717,7 +848,8 @@
         totalQuestions: state.count,
         history: state.history,
         researchNotes: state.researchNotes,
-        jobDescription: state.jobDescription
+        jobDescription: state.jobDescription,
+        supportingDocuments: state.supportingDocuments
       });
       document.getElementById('question-text').textContent = result.question;
       if (state.mode === 'voice') speak(result.question);
@@ -760,7 +892,8 @@
         question: question,
         answer: answer,
         researchNotes: state.researchNotes,
-        jobDescription: state.jobDescription
+        jobDescription: state.jobDescription,
+        supportingDocuments: state.supportingDocuments
       });
       state.history.push({
         question, answer,
@@ -829,7 +962,8 @@
         type: state.type,
         history: state.history,
         researchNotes: state.researchNotes,
-        jobDescription: state.jobDescription
+        jobDescription: state.jobDescription,
+        supportingDocuments: state.supportingDocuments
       });
       document.getElementById('summary-title').textContent = result.headline;
       document.getElementById('summary-sub').textContent = result.summary;
@@ -874,6 +1008,7 @@
     document.getElementById('screen-setup').classList.remove('hidden');
     document.getElementById('in-company').value = '';
     document.getElementById('in-jobdesc').value = '';
+    document.getElementById('in-supporting').value = '';
     document.getElementById('in-role').value = '';
     setMode('text');
   }

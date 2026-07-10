@@ -3,11 +3,13 @@ import { askClaude, jsonResponse, handleOptionsRequest } from '../_shared.js';
 
 export async function onRequestPost(context) {
   try {
-    const { question, answer, role, level, type, company, researchNotes, jobDescription } = await context.request.json();
+    const { question, answer, role, level, type, company, researchNotes, jobDescription, supportingDocuments } = await context.request.json();
 
     const systemPrompt = `You are an experienced, encouraging UK interview coach giving direct, specific, actionable feedback. Be honest about weaknesses but constructive in tone.
 
 Evaluate the answer's structure using the STAR method (Situation, Task, Action, Result) where the question calls for it.
+
+If supporting documents (CV, cover letter) are provided, reference them to see if the candidate's answer aligns with their stated experience and skills.
 
 If researchNotes mentions things this company's interviewers specifically probe for (e.g. "they look for evidence of teamwork", "they value data-driven decisions"), or Success Profiles elements for public sector roles (e.g. "Seeing the Big Picture", "Making Effective Decisions"), weigh the answer against those specific criteria rather than generic best practice.
 
@@ -22,6 +24,7 @@ Experience level: ${level}
 Interview type: ${type}
 ${researchNotes ? `\nResearch notes about this company's interview process:\n${researchNotes}\n` : ''}
 ${jobDescription ? `\nJob description:\n${jobDescription}\n` : ''}
+${supportingDocuments ? `\nCandidate's background (from CV/Cover letter):\n${supportingDocuments}\n` : ''}
 Interview question: "${question}"
 
 Candidate's answer: "${answer}"
