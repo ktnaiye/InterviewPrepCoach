@@ -129,6 +129,16 @@
     margin-top: 6px;
   }
 
+  .file-count {
+    font-size: 13px;
+    color: var(--text-mode);
+    background: var(--text-mode-soft);
+    padding: 6px 10px;
+    border-radius: 6px;
+    margin-top: 8px;
+    font-weight: 500;
+  }
+
   input[type="text"]:focus, select:focus, textarea:focus {
     border-color: var(--ink-soft);
   }
@@ -381,14 +391,16 @@
 
         <div class="field">
           <label for="in-jobdesc">Job description (optional)</label>
-          <input type="file" id="in-jobdesc" accept=".pdf,.doc,.docx" />
+          <input type="file" id="in-jobdesc" accept=".pdf,.doc,.docx" onchange="updateJobDescCount()" />
           <div class="file-hint">Upload a PDF or Word document with the job posting</div>
+          <div id="jobdesc-count" class="file-count hidden"></div>
         </div>
 
         <div class="field">
           <label for="in-supporting">Supporting documents (optional)</label>
-          <input type="file" id="in-supporting" accept=".pdf,.doc,.docx" multiple />
-          <div class="file-hint">Upload CV, cover letter, or other relevant documents</div>
+          <input type="file" id="in-supporting" accept=".pdf,.doc,.docx" multiple onchange="updateFileCount()" />
+          <div class="file-hint">Upload CV, cover letter, or other relevant documents (you can select multiple files)</div>
+          <div id="file-count" class="file-count hidden"></div>
         </div>
 
         <div class="field">
@@ -568,6 +580,33 @@
   }
 
   // ---------- File Processing ----------
+  function updateFileCount() {
+    const fileInput = document.getElementById('in-supporting');
+    const fileCountEl = document.getElementById('file-count');
+    const count = fileInput.files.length;
+    
+    if (count > 0) {
+      const fileNames = Array.from(fileInput.files).map(f => f.name).join(', ');
+      fileCountEl.textContent = `${count} file${count > 1 ? 's' : ''} selected: ${fileNames}`;
+      fileCountEl.classList.remove('hidden');
+    } else {
+      fileCountEl.classList.add('hidden');
+    }
+  }
+
+  function updateJobDescCount() {
+    const fileInput = document.getElementById('in-jobdesc');
+    const fileCountEl = document.getElementById('jobdesc-count');
+    const file = fileInput.files[0];
+    
+    if (file) {
+      fileCountEl.textContent = `Selected: ${file.name}`;
+      fileCountEl.classList.remove('hidden');
+    } else {
+      fileCountEl.classList.add('hidden');
+    }
+  }
+
   async function extractTextFromPDF(file) {
     try {
       const arrayBuffer = await file.arrayBuffer();
@@ -1010,6 +1049,8 @@
     document.getElementById('in-jobdesc').value = '';
     document.getElementById('in-supporting').value = '';
     document.getElementById('in-role').value = '';
+    document.getElementById('jobdesc-count').classList.add('hidden');
+    document.getElementById('file-count').classList.add('hidden');
     setMode('text');
   }
 </script>
