@@ -497,6 +497,7 @@
             <div class="voice-controls">
               <button class="btn-mic" id="btn-mic" data-listening="false" onclick="toggleListening()">🎙️ Start speaking</button>
             </div>
+            <div class="file-hint" style="margin-top: 8px;">💡 Tip: Recording automatically continues for long answers. Speak naturally and click "Stop speaking" when done.</div>
             <div id="voice-unsupported" class="error-box hidden">
               Your browser doesn't support voice input. Switch to typed answers below to continue.
             </div>
@@ -663,6 +664,8 @@
   let recognition = null;
   let listening = false;
   let finalTranscript = '';
+  let recognitionStartTime = 0;
+  const MAX_RECORDING_DURATION = 55000; // 55 seconds - restart before browser limit
 
   // ---------- API helpers ----------
   async function callAPI(endpoint, payload) {
@@ -801,7 +804,8 @@
     recognition = new SR();
     recognition.continuous = true;
     recognition.interimResults = true;
-    recognition.lang = 'en-US';
+    recognition.lang = 'en-GB'; // UK English
+    recognition.maxAlternatives = 1;
 
     recognition.onresult = (event) => {
       let interim = '';
@@ -811,13 +815,55 @@
         else interim += transcript;
       }
       const box = document.getElementById('transcript-box');
-      box.textContent = (finalTranscript + interim).trim() || 'Listening…';
-      box.classList.toggle('has-text', (finalTranscript + interim).trim().length > 0);
+      const fullText = (finalTranscript + interim).trim();
+      box.textContent = fullText || 'Listening…';
+      box.classList.toggle('has-text', fullText.length > 0);
+      
+      // Update waveform to show active recording
+      document.getElementById('waveform').classList.add('listening');
+      
+      // Check if we're approaching the duration limit
+      const elapsed = Date.now() - recognitionStartTime;
+      if (elapsed > MAX_RECORDING_DURATION && listening) {
+        console.log('Approaching duration limit, restarting recognition...');
+        recognition.stop(); // Will trigger onend which restarts
+      }
     };
 
-    recognition.onerror = () => stopListening();
+    recognition.onerror = (event) => {
+      console.warn('Speech recognition error:', event.error);
+      if (event.error === 'no-speech' || event.error === 'audio-capture') {
+        // Automatically restart on common errors
+        if (listening) {
+          setTimeout(() => {
+            try { recognition.start(); recognitionStartTime = Date.now(); } catch (e) { console.log('Restart prevented:', e); }
+          }, 100);
+        }
+      } else if (event.error === 'not-allowed') {
+        showError('answer-error', 'Microphone access denied. Please allow microphone access to use voice input.');
+        stopListening();
+      }
+    };
+    
     recognition.onend = () => {
-      if (listening) recognition.start(); // keep listening until user stops
+      // Automatically restart if still listening
+      if (listening) {
+        setTimeout(() => {
+          try { 
+            recognition.start();
+            recognitionStartTime = Date.now();
+            console.log('Speech recognition restarted (continuous recording)');
+          } catch (e) { 
+            console.log('Could not restart:', e);
+          }
+        }, 100);
+      }
+    };
+
+    recognition.onstart = () => {
+      recognitionStartTime = Date.now();
+      console.log('Speech recognition started');
+      document.getElementById('waveform').classList.add('listening');
     };
   }
 
