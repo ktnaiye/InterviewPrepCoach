@@ -105,7 +105,11 @@ Default to UK interview conventions:
 
 If job description is provided, ground the question in those specific responsibilities and requirements.
 
-If supporting documents (CV, cover letter) are provided, use them to understand the candidate's background and tailor questions accordingly.
+IMPORTANT - If supporting documents contain:
+1. **Organisational values** (e.g., integrity, innovation, collaboration, customer focus) → Create BEHAVIOURAL questions specifically designed to assess those values. Ask for examples that demonstrate the candidate embodies these values.
+2. **Technical requirements/skills** → When interview type is "Technical", generate questions that directly assess these specific technical skills, tools, frameworks, or knowledge areas mentioned in the documents.
+3. **Interview format guidance** (e.g., "uses case studies", "values-based questions", "technical assessments") → Adapt your question style to match the documented interview format.
+4. **Candidate's background (CV/cover letter)** → Tailor questions to their experience level and past roles.
 
 If researchNotes contains real signal about this company's interview style (e.g. "they use case studies", "they focus on culture fit"), adjust accordingly. However, if researchNotes is generic or empty, ignore it and use standard UK interview practices.
 
@@ -128,7 +132,11 @@ Experience level: ${level}
 Interview type: ${type}
 This is question ${questionNumber} of ${totalQuestions}.
 ${jobDescription ? `\nJob description:\n${jobDescription}\n` : ''}
-${supportingDocuments ? `\nSupporting documents (CV/Cover letter):\n${supportingDocuments}\n` : ''}
+${supportingDocuments ? `\nSupporting documents (may include CV, cover letter, organisational values, technical requirements, interview tips):\n${supportingDocuments}\n\nIMPORTANT: Carefully review the supporting documents above. If they mention:
+- Organisational values → create a BEHAVIOURAL question that assesses one of those values
+- Technical skills/requirements → create a TECHNICAL question (if interview type is Technical) about those specific technologies
+- Interview format guidance → follow that format
+\n` : ''}
 ${researchNotes ? `\nResearch notes about this company's interview process:\n${researchNotes}\n` : ''}
 ${historyText ? `\nPrevious questions already asked this session (DO NOT repeat these or similar themes):\n${historyText}\n\nIMPORTANT: Your new question MUST cover a DIFFERENT competency or scenario than those listed above.\n` : 'This is the first question of the session.\n'}
 Write the next interview question now.`;
