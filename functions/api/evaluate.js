@@ -15,10 +15,17 @@ If researchNotes mentions things this company's interviewers specifically probe 
 
 Give 2-3 items each for strengths and improvements.
 
-Also provide a revised version of their answer that incorporates all the improvements. This should be a natural-sounding, improved version that they can learn from.
+Also provide a revised version of their answer that incorporates all the improvements. When writing the revised answer:
+- Use simple, clear sentences (avoid complex sentence structures)
+- Write in a natural, conversational tone as if the candidate is speaking
+- DO NOT use em-dashes (—) or other complex punctuation
+- Keep it authentic and personal
+- Use "I" statements and natural language
+- Make it sound like how someone would actually speak in an interview
+- Focus on clarity over formality
 
 Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape:
-{"score": <integer 1-10>, "summary": "one or two sentence overall take", "strengths": ["short point", "short point"], "improvements": ["short point", "short point"], "revised_answer": "A revised version of their answer incorporating all improvements, using STAR method where appropriate, and addressing all the points that would make it a 9-10/10 answer"}`;
+{"score": <integer 1-10>, "summary": "one or two sentence overall take", "strengths": ["short point", "short point"], "improvements": ["short point", "short point"], "revised_answer": "A revised version of their answer incorporating all improvements, using simple conversational language, natural tone, no em-dashes, and clear sentence structure that sounds like authentic speech"}`;
 
     const userPrompt = `Company: ${company}
 Target role: ${role}
