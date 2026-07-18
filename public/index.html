@@ -309,6 +309,17 @@
   .feedback-list li { margin-bottom: 4px; }
   .feedback-note { font-size: 14.5px; line-height: 1.6; color: var(--ink); }
 
+  .model-answer-box {
+    background: var(--text-mode-soft);
+    border: 1px solid var(--text-mode);
+    border-radius: 10px;
+    padding: 16px;
+    font-size: 14.5px;
+    line-height: 1.7;
+    color: var(--ink);
+    font-style: normal;
+  }
+
   .error-box {
     background: #FBEAE4; border: 1px solid var(--danger); color: var(--danger);
     border-radius: 10px; padding: 12px 14px; font-size: 13.5px; margin-bottom: 16px;
@@ -526,6 +537,11 @@
           <div class="feedback-section">
             <h4>What to sharpen</h4>
             <ul class="feedback-list" id="fb-improvements"></ul>
+          </div>
+
+          <div class="feedback-section" id="model-answer-section">
+            <h4>Model answer (incorporating improvements)</h4>
+            <div class="model-answer-box" id="fb-revised"></div>
           </div>
 
           <button class="btn-primary" id="btn-next" onclick="nextQuestion()" style="margin-top:20px;">Next question</button>
@@ -984,7 +1000,8 @@
         question, answer,
         score: result.score,
         strengths: result.strengths,
-        improvements: result.improvements
+        improvements: result.improvements,
+        revised_answer: result.revised_answer || ''
       });
       renderFeedback(result);
     } catch (err) {
@@ -1001,6 +1018,15 @@
       result.strengths.map(s => `<li>${s}</li>`).join('');
     document.getElementById('fb-improvements').innerHTML =
       result.improvements.map(s => `<li>${s}</li>`).join('');
+    
+    // Display revised answer if available
+    if (result.revised_answer) {
+      document.getElementById('fb-revised').textContent = result.revised_answer;
+      document.getElementById('model-answer-section').classList.remove('hidden');
+    } else {
+      document.getElementById('model-answer-section').classList.add('hidden');
+    }
+    
     document.getElementById('feedback-block').classList.remove('hidden');
     document.getElementById('answer-block').classList.add('hidden');
 
@@ -1067,6 +1093,11 @@
     // Render detailed Q&A review
     const qaReviewHTML = state.history.map((h, i) => {
       const scoreLevel = h.score >= 7 ? 'high' : h.score >= 5 ? 'medium' : 'low';
+      const revisedAnswerHTML = h.revised_answer ? `
+        <div class="qa-feedback-label" style="margin-top: 12px;">Model answer (incorporating improvements)</div>
+        <div class="model-answer-box">${h.revised_answer}</div>
+      ` : '';
+      
       return `
         <div class="qa-item" data-score="${scoreLevel}">
           <div class="qa-header">
@@ -1074,12 +1105,13 @@
             <div class="qa-score-badge">${h.score}/10</div>
           </div>
           <div class="qa-question">${h.question}</div>
-          <div class="qa-answer">${h.answer}</div>
+          <div class="qa-answer"><strong>Your answer:</strong><br>${h.answer}</div>
           <div class="qa-feedback">
             <div class="qa-feedback-label">What worked</div>
             <div class="qa-feedback-text">${h.strengths.map(s => `• ${s}`).join('<br>')}</div>
             <div class="qa-feedback-label">What to improve</div>
             <div class="qa-feedback-text">${h.improvements.map(s => `• ${s}`).join('<br>')}</div>
+            ${revisedAnswerHTML}
           </div>
         </div>
       `;

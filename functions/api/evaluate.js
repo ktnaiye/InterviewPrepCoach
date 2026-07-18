@@ -15,8 +15,10 @@ If researchNotes mentions things this company's interviewers specifically probe 
 
 Give 2-3 items each for strengths and improvements.
 
+Also provide a revised version of their answer that incorporates all the improvements. This should be a natural-sounding, improved version that they can learn from.
+
 Respond with ONLY a JSON object, no markdown fences, no preamble, in this exact shape:
-{"score": <integer 1-10>, "summary": "one or two sentence overall take", "strengths": ["short point", "short point"], "improvements": ["short point", "short point"]}`;
+{"score": <integer 1-10>, "summary": "one or two sentence overall take", "strengths": ["short point", "short point"], "improvements": ["short point", "short point"], "revised_answer": "A revised version of their answer incorporating all improvements, using STAR method where appropriate, and addressing all the points that would make it a 9-10/10 answer"}`;
 
     const userPrompt = `Company: ${company}
 Target role: ${role}
@@ -39,7 +41,8 @@ Evaluate this answer.`;
       score: 5,
       summary: 'Unable to evaluate at this time.',
       strengths: ['Answer provided'],
-      improvements: ['Try again']
+      improvements: ['Try again'],
+      revised_answer: ''
     }, 500);
   }
 }
